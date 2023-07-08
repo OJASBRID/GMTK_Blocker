@@ -7,9 +7,11 @@ using System.Linq.Expressions;
 
 public class MazeGenerator : MonoBehaviour
 {
+    private GameObject player;
+    public Vector3 pf;
     public int width, height;
     public Material brick;
-    private int[,] Maze;
+    public int[,] Maze;
     private List<Vector3> pathMazes = new List<Vector3>();
     private Stack<Vector2> _tiletoTry = new Stack<Vector2>();
     private GameObject[,] gmxy ;
@@ -55,6 +57,8 @@ public class MazeGenerator : MonoBehaviour
         Camera.main.orthographicSize = 30;
         GenerateMaze();
         CreateExit();
+        PlayerInstantiation();
+        Scale_Translate();
     }
 
     void GenerateMaze()
@@ -94,6 +98,85 @@ public class MazeGenerator : MonoBehaviour
 
             }
         }
+    }
+
+    void PlayerInstantiation ()
+    {
+        int mid_x = width/2;
+        int mid_y = height/2;
+
+        if(Maze[mid_x, mid_y] == 1)
+        {
+            if(Maze[mid_x + 1, mid_y] != 1)
+                mid_x += 1;
+            else if(Maze[mid_x, mid_y + 1] != 1)
+                mid_y += 1;
+            else if(Maze[mid_x - 1, mid_y] != 1)
+                mid_x -= 1;
+            else if(Maze[mid_x, mid_y - 1] != 1)
+                mid_y -= 1;
+            else if(Maze[mid_x + 1, mid_y + 1] != 1)
+            {
+                mid_x += 1;
+                mid_y += 1;
+            }
+            else if(Maze[mid_x + 1, mid_y - 1] != 1)
+            {
+                mid_x += 1;
+                mid_y -= 1;
+            }
+            else if(Maze[mid_x - 1, mid_y + 1] != 1)
+            {
+                mid_x -= 1;
+                mid_y += 1;
+            }
+            else if(Maze[mid_x - 1, mid_y - 1] != 1)
+            {
+                mid_x -= 1;
+                mid_y -= 1;
+            }
+        }
+
+        player = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        player.transform.SetParent(transform);
+        player.transform.position = new Vector3(mid_x * player.transform.localScale.x, mid_y * player.transform.localScale.y, 0);
+        player.transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
+    }
+
+    void Scale_Translate()
+    {
+        Bounds parentBounds = GetBounds(transform);
+
+        Camera camera = Camera.main;
+        float screenHeight = 2f * camera.orthographicSize;
+
+        float scaleFactor = screenHeight / parentBounds.size.y * 0.9f;
+
+        transform.localScale = new Vector3(
+            transform.localScale.x * scaleFactor,
+            transform.localScale.y * scaleFactor,
+            transform.localScale.z
+        );
+
+        // player.transform.localScale = new Vector3(
+        //     player.transform.localScale.x * scaleFactor,
+        //     player.transform.localScale.y * scaleFactor,
+        //     player.transform.localScale.z
+        // );
+
+        transform.position = pf * scaleFactor;
+        // player.transform.position = pf * scaleFactor;
+    }
+
+    private Bounds GetBounds(Transform transform)
+    {
+        Renderer[] renderers = transform.GetComponentsInChildren<Renderer>();
+        Bounds bounds = new Bounds(transform.position, Vector3.zero);
+
+        foreach (Renderer renderer in renderers)
+            bounds.Encapsulate(renderer.bounds);
+
+        return bounds;
     }
 
     void CreateExit()
