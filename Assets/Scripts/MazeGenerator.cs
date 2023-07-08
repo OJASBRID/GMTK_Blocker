@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-
+using Unity.Mathematics;
 
 public class MazeGenerator : MonoBehaviour
 {
@@ -11,6 +11,7 @@ public class MazeGenerator : MonoBehaviour
     public Vector3 pf;
     public int width, height;
     public Material brick;
+    public int2 val;
     public int[,] Maze;
     public int[] MazeOneD;
     private List<Vector3> pathMazes = new List<Vector3>();
@@ -109,36 +110,47 @@ public class MazeGenerator : MonoBehaviour
 
         if(Maze[mid_x, mid_y] == 1)
         {
-            if(Maze[mid_x + 1, mid_y] != 1)
-                mid_x += 1;
-            else if(Maze[mid_x, mid_y + 1] != 1)
-                mid_y += 1;
-            else if(Maze[mid_x - 1, mid_y] != 1)
-                mid_x -= 1;
-            else if(Maze[mid_x, mid_y - 1] != 1)
-                mid_y -= 1;
-            else if(Maze[mid_x + 1, mid_y + 1] != 1)
+            if (Maze[mid_x + 1, mid_y] != 1)
             {
                 mid_x += 1;
+
+            }
+            else if (Maze[mid_x, mid_y + 1] != 1)
+            {
                 mid_y += 1;
             }
-            else if(Maze[mid_x + 1, mid_y - 1] != 1)
-            {
-                mid_x += 1;
-                mid_y -= 1;
-            }
-            else if(Maze[mid_x - 1, mid_y + 1] != 1)
+            else if (Maze[mid_x - 1, mid_y] != 1)
             {
                 mid_x -= 1;
+            }
+            else if (Maze[mid_x, mid_y - 1] != 1)
+            {
+                mid_y -= 1;
+            }
+            else if (Maze[mid_x + 1, mid_y + 1] != 1)
+            {
+                mid_x += 1;
                 mid_y += 1;
             }
-            else if(Maze[mid_x - 1, mid_y - 1] != 1)
+            else if (Maze[mid_x + 1, mid_y - 1] != 1)
+            {
+                mid_x += 1;
+                mid_y -= 1;
+            }
+            else if (Maze[mid_x - 1, mid_y + 1] != 1)
+            {
+                mid_x -= 1;
+                mid_y += 1;
+            }
+            else if (Maze[mid_x - 1, mid_y - 1] != 1)
             {
                 mid_x -= 1;
                 mid_y -= 1;
             }
         }
-
+        val.x = mid_x;
+        val.y = mid_y;
+        Debug.Log(mid_x);
         player = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         player.transform.SetParent(transform);
         player.transform.position = new Vector3(mid_x * player.transform.localScale.x, mid_y * player.transform.localScale.y, 0);
@@ -327,7 +339,7 @@ public class MazeGenerator : MonoBehaviour
         for(int i = 0; i < height; i++)
             for(int j = 0; j < width; j++)
             {
-                MazeOneD[index] = Maze[i, j];
+                MazeOneD[index++] = Maze[i, j];
             }
     }
 }

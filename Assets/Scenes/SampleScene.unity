@@ -154,9 +154,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0b7dd8ea713afe44b6a0603d05e994d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 49
-  height: 49
+  pf: {x: -17, y: -17, z: 0}
+  width: 35
+  height: 35
   brick: {fileID: 2100000, guid: 41c08c446be299b4ba615d882c915620, type: 2}
+  MazeOneD: 
 --- !u!4 &268621757
 Transform:
   m_ObjectHideFlags: 0
@@ -179,7 +181,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 268621755}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fabbc8d995bf3b245b4b8b3fa9bab0c7, type: 3}
   m_Name: 

@@ -16,34 +16,33 @@ public class PathFinding : MonoBehaviour {
     private const int MOVE_DIAGONAL_COST = 14;
     
     private void Start() {
-        int [,] arr = mz.Maze;
-            NativeArray<int> points = new NativeArray<int>(35*35,Allocator.Temp);
-        for(int i  = 0;i<35;i++)
+        
+            NativeArray<int> points = new NativeArray<int>(1225,Allocator.Persistent);
+        Debug.Log(mz.val);
+        for(int i  = 0;i<mz.MazeOneD.Length;i++)
         {
-            for(int j = 0;j<35;j++)
-            {
-                int k = arr[i, j];
-                points[i * 35 + j] = k;
-            }
+            points[i] = mz.MazeOneD[i];
         }
            
-        int findPathJobCount = 5;
+        int findPathJobCount = 3;
             NativeArray<JobHandle> jobHandleArray = new NativeArray<JobHandle>(findPathJobCount, Allocator.TempJob);
 
             for (int i = 0; i < findPathJobCount; i++) {
             FindPathJob findPathJob = new FindPathJob {
-                startPosition = new int2(10, 14),
-                endPosition = new int2(22, 31),
+                startPosition = new int2(mz.val),
+                endPosition = new int2(20 + i, 28),
                 board = points
                 
                     
                 };
                 jobHandleArray[i] = findPathJob.Schedule();
-            }
-            
             JobHandle.CompleteAll(jobHandleArray);
-            jobHandleArray.Dispose();
-            points.Dispose();
+            
+        }
+        jobHandleArray.Dispose();
+
+
+        points.Dispose();
         
 
           
@@ -51,21 +50,24 @@ public class PathFinding : MonoBehaviour {
 
     [BurstCompile]
     private struct FindPathJob : IJob {
-        public NativeArray<int> board;
+        
         public int2 startPosition;
         public int2 endPosition;
+        [ReadOnly]
+        
+        public NativeArray<int> board;
 
         public void Execute() {
-            int2 gridSize = new int2(35,35);
+            //int2 gridSize = new int2(35,35);
 
-            NativeArray<PathNode> pathNodeArray = new NativeArray<PathNode>(gridSize.x * gridSize.y, Allocator.Temp);
+            NativeArray<PathNode> pathNodeArray = new NativeArray<PathNode>(35 * 35, Allocator.Temp);
 
-            for (int x = 0; x < gridSize.x; x++) {
-                for (int y = 0; y < gridSize.y; y++) {
+            for (int x = 0; x < 35; x++) {
+                for (int y = 0; y < 35; y++) {
                     PathNode pathNode = new PathNode();
                     pathNode.x = x;
                     pathNode.y = y;
-                    pathNode.index = CalculateIndex(x, y, gridSize.x);
+                    pathNode.index = CalculateIndex(x, y, 35);
 
                     pathNode.gCost = int.MaxValue;
                     pathNode.hCost = CalculateDistanceCost(new int2(x, y), endPosition);
@@ -94,12 +96,15 @@ public class PathFinding : MonoBehaviour {
                 pathNodeArray[CalculateIndex(1, 2, gridSize.x)] = walkablePathNode;
             }
             */
-
+            
             for(int i = 0;i<35;i++)
             {
                 for(int j = 0;j<35;j++)
-                {   if (board[i*35 + j] == 1)
+
+                { int count = board[35*i + j];
+                    if (count == 0)
                     {
+                       
                         PathNode walkablePathNode = pathNodeArray[CalculateIndex(i, j, 35)];
                         walkablePathNode.SetIsWalkable(false);
                         pathNodeArray[CalculateIndex(i, j, 35)] = walkablePathNode;
@@ -107,19 +112,19 @@ public class PathFinding : MonoBehaviour {
                 }
             }
 
-            NativeArray<int2> neighbourOffsetArray = new NativeArray<int2>(8, Allocator.Temp);
+            NativeArray<int2> neighbourOffsetArray = new NativeArray<int2>(4, Allocator.Temp);
             neighbourOffsetArray[0] = new int2(-1, 0); // Left
             neighbourOffsetArray[1] = new int2(+1, 0); // Right
             neighbourOffsetArray[2] = new int2(0, +1); // Up
             neighbourOffsetArray[3] = new int2(0, -1); // Down
-            neighbourOffsetArray[4] = new int2(-1, -1); // Left Down
-            neighbourOffsetArray[5] = new int2(-1, +1); // Left Up
-            neighbourOffsetArray[6] = new int2(+1, -1); // Right Down
-            neighbourOffsetArray[7] = new int2(+1, +1); // Right Up
+            //neighbourOffsetArray[4] = new int2(-1, -1); // Left Down
+            //neighbourOffsetArray[5] = new int2(-1, +1); // Left Up
+            //neighbourOffsetArray[6] = new int2(+1, -1); // Right Down
+            //neighbourOffsetArray[7] = new int2(+1, +1); // Right Up
 
-            int endNodeIndex = CalculateIndex(endPosition.x, endPosition.y, gridSize.x);
+            int endNodeIndex = CalculateIndex(endPosition.x, endPosition.y, 35);
 
-            PathNode startNode = pathNodeArray[CalculateIndex(startPosition.x, startPosition.y, gridSize.x)];
+            PathNode startNode = pathNodeArray[CalculateIndex(startPosition.x, startPosition.y, 35)];
             startNode.gCost = 0;
             startNode.CalculateFCost();
             pathNodeArray[startNode.index] = startNode;
@@ -152,12 +157,12 @@ public class PathFinding : MonoBehaviour {
                     int2 neighbourOffset = neighbourOffsetArray[i];
                     int2 neighbourPosition = new int2(currentNode.x + neighbourOffset.x, currentNode.y + neighbourOffset.y);
 
-                    if (!IsPositionInsideGrid(neighbourPosition, gridSize)) {
+                    if (!IsPositionInsideGrid(neighbourPosition, new int2(35,35))) {
                         // Neighbour not valid position
                         continue;
                     }
 
-                    int neighbourNodeIndex = CalculateIndex(neighbourPosition.x, neighbourPosition.y, gridSize.x);
+                    int neighbourNodeIndex = CalculateIndex(neighbourPosition.x, neighbourPosition.y, 35);
 
                     if (closedList.Contains(neighbourNodeIndex)) {
                         // Already searched this node
@@ -194,11 +199,12 @@ public class PathFinding : MonoBehaviour {
             } else {
                 // Found a path
                 NativeList<int2> path = CalculatePath(pathNodeArray, endNode);
+                //Debug.Log(string.Format("{0}", path.Length));
                 for(int o = 0;o<path.Length;o++) {
-                    Debug.Log(string.Format("{0};{1}", path[o].x, path[o].y));
+                   Debug.Log(string.Format("{0};{1};{2}", path.Length,path[o].x, path[o].y));
                 }
                 
-                
+                //Send from here
                 path.Dispose();
             }
 
@@ -206,7 +212,7 @@ public class PathFinding : MonoBehaviour {
             neighbourOffsetArray.Dispose();
             openList.Dispose();
             closedList.Dispose();
-            board.Dispose();
+           // board.Dispose();
         }
         
         private NativeList<int2> CalculatePath(NativeArray<PathNode> pathNodeArray, PathNode endNode) {
