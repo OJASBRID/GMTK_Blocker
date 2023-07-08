@@ -9,7 +9,7 @@ public class MazeGenerator : MonoBehaviour
 {
     public int width, height;
     public Material brick;
-    private int[,] Maze;
+    public int[,] Maze;
     private List<Vector3> pathMazes = new List<Vector3>();
     private Stack<Vector2> _tiletoTry = new Stack<Vector2>();
     private GameObject[,] gmxy ;
