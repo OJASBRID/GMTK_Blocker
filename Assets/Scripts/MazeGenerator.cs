@@ -12,6 +12,7 @@ public class MazeGenerator : MonoBehaviour
     public int width, height;
     public Material brick;
     public int[,] Maze;
+    public int[] MazeOneD;
     private List<Vector3> pathMazes = new List<Vector3>();
     private Stack<Vector2> _tiletoTry = new Stack<Vector2>();
     private GameObject[,] gmxy ;
@@ -59,6 +60,7 @@ public class MazeGenerator : MonoBehaviour
         CreateExit();
         PlayerInstantiation();
         Scale_Translate();
+        ConvertMaze();
     }
 
     void GenerateMaze()
@@ -315,5 +317,17 @@ public class MazeGenerator : MonoBehaviour
     private bool IsInside(Vector2 p)
     {
         return p.x >= 0  && p.y >= 0 && p.x < width && p.y < height;
+    }
+
+    private void ConvertMaze()
+    {
+        MazeOneD = new int[width * height];
+
+        int index = 0;
+        for(int i = 0; i < height; i++)
+            for(int j = 0; j < width; j++)
+            {
+                MazeOneD[index] = Maze[i, j];
+            }
     }
 }
